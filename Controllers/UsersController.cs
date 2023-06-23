@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -142,6 +141,10 @@ namespace UserService.Controllers
         [Route("/address")]
         public async Task<ActionResult<UserAddress>> PostUserAddress(UserAddress userAddress)
         {
+            User? user = await _context.Users.FindAsync(userAddress.UserId);
+
+            if (user == null)
+                return BadRequest();
             try
             {
                 await _context.UsersAddresses.AddAsync(userAddress);
