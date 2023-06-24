@@ -19,9 +19,9 @@ namespace UserService.ResponseModels
 
         public Role Role { get; set; }
 
-        public List<UserAddress> UserAddress { get; set; }
+        public IEnumerable<UserAddress> UserAddress { get; set; }
 
-        public UserGetResponse(int id, string firstName, string secondName, string userName, string email, Role role, List<UserAddress> userAddress)
+        public UserGetResponse(int id, string firstName, string secondName, string userName, string email, Role role, IEnumerable<UserAddress> userAddress)
         {
             Id = id;
             FirstName = firstName;

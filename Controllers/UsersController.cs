@@ -24,13 +24,17 @@ namespace UserService.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserGetResponse>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserGetResponse>>> GetUsers(int limit,int skip)
         {
             if (_context.Users == null)
             {
                 return NotFound();
             }
-            List<User> users = await _context.Users.ToListAsync();
+            List<User> users = await _context.Users.
+                Skip(skip*limit).
+                AsNoTracking().
+                ToListAsync();
+
             List<UserGetResponse> responses = new();
             try
             {
@@ -38,7 +42,7 @@ namespace UserService.Controllers
                 {
                     Role? roleOfUser = await _context.Roles.FindAsync(user.RoleId) ?? throw new Exception($"Cannot find a role for user {user.Id}");
 
-                    List<UserAddress>? addressesOfUser = _context.UsersAddresses.Where(ua => ua.UserId == user.Id).ToList() ?? throw new Exception($"cannot find address for ${user.Id}");
+                    IEnumerable<UserAddress>? addressesOfUser = _context.UsersAddresses.Where(ua => ua.UserId == user.Id) ?? throw new Exception($"cannot find address for ${user.Id}");
 
                     responses.Add(new UserGetResponse(user.Id, user.FirstName, user.LastName, user.Username, user.Email, roleOfUser, addressesOfUser));
 
