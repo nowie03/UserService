@@ -13,10 +13,10 @@ namespace UserService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ServiceContext _context;
-        
+
         private readonly IMessageBrokerClient _rabbitMQClient;
 
-        public UsersController(ServiceContext context,IServiceProvider serviceProvider)
+        public UsersController(ServiceContext context, IServiceProvider serviceProvider)
         {
             _context = context;
             _rabbitMQClient = serviceProvider.GetRequiredService<IMessageBrokerClient>();
@@ -26,27 +26,28 @@ namespace UserService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserGetResponse>>> GetUsers()
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
-            List<User>users= await _context.Users.ToListAsync();
-            List<UserGetResponse> responses= new ();
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            List<User> users = await _context.Users.ToListAsync();
+            List<UserGetResponse> responses = new();
             try
             {
                 foreach (var user in users)
                 {
                     Role? roleOfUser = await _context.Roles.FindAsync(user.RoleId) ?? throw new Exception($"Cannot find a role for user {user.Id}");
 
-                    List<UserAddress>? addressesOfUser =  _context.UsersAddresses.Where(ua => ua.UserId == user.Id).ToList()?? throw new Exception($"cannot find address for ${user.Id}");
+                    List<UserAddress>? addressesOfUser = _context.UsersAddresses.Where(ua => ua.UserId == user.Id).ToList() ?? throw new Exception($"cannot find address for ${user.Id}");
 
-                     responses.Add(new UserGetResponse(user.Id,user.FirstName,user.LastName,user.Username,user.Email,roleOfUser,addressesOfUser));
+                    responses.Add(new UserGetResponse(user.Id, user.FirstName, user.LastName, user.Username, user.Email, roleOfUser, addressesOfUser));
 
-                   
+
                 }
                 return Ok(responses);
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
@@ -57,10 +58,10 @@ namespace UserService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserGetResponse>> GetUser(int id)
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
@@ -76,11 +77,12 @@ namespace UserService.Controllers
                 List<UserAddress>? addressesOfUser = _context.UsersAddresses.Where(ua => ua.UserId == user.Id).ToList() ?? throw new Exception($"cannot find address for ${user.Id}");
 
                 return (new UserGetResponse(user.Id, user.FirstName, user.LastName, user.Username, user.Email, roleOfUser, addressesOfUser));
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-            
+
         }
 
         // PUT: api/Users/5
@@ -124,18 +126,19 @@ namespace UserService.Controllers
                 return Problem("Entity set 'ServiceContext.Users'  is null.");
             }
             var transaction = _context.Database.BeginTransaction();
-            try{   
+            try
+            {
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                _rabbitMQClient.SendProductMessage<User>(user,EventTypes.USER_CREATED);
+                _rabbitMQClient.SendProductMessage<User>(user, EventTypes.USER_CREATED);
 
                 transaction.Commit();
 
                 return CreatedAtAction("GetUser", new { id = user.Id }, user);
-            }   
-            catch(DbUpdateException ex)
+            }
+            catch (DbUpdateException ex)
             {
                 transaction.Rollback();
                 return BadRequest("User already exixts with that credentials");
@@ -145,7 +148,7 @@ namespace UserService.Controllers
                 transaction.Rollback();
                 return Problem("unable to reach message queue try again");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 transaction.Rollback();
                 return Problem("something went wrong");
@@ -167,7 +170,8 @@ namespace UserService.Controllers
 
                 return Ok(userAddress);
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return Problem(ex.Message);
             }

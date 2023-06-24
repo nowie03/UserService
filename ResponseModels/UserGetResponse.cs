@@ -8,20 +8,20 @@ namespace UserService.ResponseModels
 
         public String FirstName { get; set; }
 
-      
+
         public String LastName { get; set; }
 
         public String Username { get; set; }
 
-        
+
         public string Email { get; set; }
 
-        
-        public Role Role{ get; set; }
+
+        public Role Role { get; set; }
 
         public List<UserAddress> UserAddress { get; set; }
 
-        public UserGetResponse(int id,string firstName,string secondName,string userName,string email,Role role,List<UserAddress> userAddress)
+        public UserGetResponse(int id, string firstName, string secondName, string userName, string email, Role role, List<UserAddress> userAddress)
         {
             Id = id;
             FirstName = firstName;

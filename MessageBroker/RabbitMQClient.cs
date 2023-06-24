@@ -1,32 +1,31 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Threading.Channels;
 using UserService.Models;
 
 namespace UserService.MessageBroker
 {
-    public class RabbitMQClient:IMessageBrokerClient
+    public class RabbitMQClient : IMessageBrokerClient
     {
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _channel;
-        private string _queueName="service-queue";
+        private string _queueName = "service-queue";
 
         ~RabbitMQClient()
         {
             if (_connection != null)
-            _connection.Close();
+                _connection.Close();
 
-            if (_channel!= null)
-            _channel.Close();
+            if (_channel != null)
+                _channel.Close();
 
         }
-        private void  SetupCleint() {
+        private void SetupCleint()
+        {
             //Here we specify the Rabbit MQ Server. we use rabbitmq docker image and use it
-             _connectionFactory = new ConnectionFactory
+            _connectionFactory = new ConnectionFactory
             {
                 HostName = "localhost"
             };
@@ -37,14 +36,14 @@ namespace UserService.MessageBroker
             //declare the queue after mentioning name and a few property related to that
             _channel.QueueDeclare(_queueName, exclusive: false);
         }
-        public void SendProductMessage<T>(T message,string eventType)
+        public void SendProductMessage<T>(T message, string eventType)
         {
             SetupCleint();
 
             //Serialize the message
 
 
-            Message<T> eventMessage=new Message<T>(eventType, message);
+            Message<T> eventMessage = new Message<T>(eventType, message);
 
             string json = JsonConvert.SerializeObject(eventMessage);
 

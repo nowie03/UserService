@@ -1,11 +1,11 @@
-﻿using UserService.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using UserService.Models;
 
 namespace UserService.Context
 {
-    public class ServiceContext:DbContext
+    public class ServiceContext : DbContext
     {
-        public ServiceContext(DbContextOptions dbContextOptions):base(dbContextOptions) { }
+        public ServiceContext(DbContextOptions dbContextOptions) : base(dbContextOptions) { }
 
         public DbSet<User> Users { get; set; }
 
@@ -13,6 +13,6 @@ namespace UserService.Context
 
         public DbSet<UserAddress> UsersAddresses { get; set; }
 
-       
+
     }
 }
