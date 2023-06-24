@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UserService.Context;
+using UserService.MessageBroker;
 
 namespace UserService
 {
@@ -12,6 +13,9 @@ namespace UserService
             // Add services to the container.
             builder.Services.AddDbContext<ServiceContext>(options=>options.UseSqlServer(
                 builder.Configuration.GetConnectionString("local-server")));
+
+            //add rabbitmqclient as singleton service
+            builder.Services.AddSingleton<IMessageBrokerClient,RabbitMQClient>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

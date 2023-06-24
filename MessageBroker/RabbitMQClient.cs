@@ -8,13 +8,23 @@ using UserService.Models;
 
 namespace UserService.MessageBroker
 {
-    public class RabbitMQClient
+    public class RabbitMQClient:IMessageBrokerClient
     {
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _channel;
         private string _queueName="service-queue";
-        private void  _setupCleint() {
+
+        ~RabbitMQClient()
+        {
+            if (_connection != null)
+            _connection.Close();
+
+            if (_channel!= null)
+            _channel.Close();
+
+        }
+        private void  SetupCleint() {
             //Here we specify the Rabbit MQ Server. we use rabbitmq docker image and use it
              _connectionFactory = new ConnectionFactory
             {
@@ -29,7 +39,7 @@ namespace UserService.MessageBroker
         }
         public void SendProductMessage<T>(T message,string eventType)
         {
-            _setupCleint();
+            SetupCleint();
 
             //Serialize the message
 
@@ -47,7 +57,7 @@ namespace UserService.MessageBroker
 
         public void ReceiveMessage()
         {
-            _setupCleint();
+            SetupCleint();
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (model, eventArgs) =>
             {

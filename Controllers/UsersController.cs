@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserService.Constants;
 using UserService.Context;
@@ -18,12 +13,13 @@ namespace UserService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ServiceContext _context;
-        private RabbitMQClient _rabbitMQClient;
+        
+        private readonly IMessageBrokerClient _rabbitMQClient;
 
-        public UsersController(ServiceContext context)
+        public UsersController(ServiceContext context,IServiceProvider serviceProvider)
         {
             _context = context;
-            _rabbitMQClient = new();
+            _rabbitMQClient = serviceProvider.GetRequiredService<IMessageBrokerClient>();
         }
 
         // GET: api/Users
