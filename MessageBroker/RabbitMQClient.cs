@@ -39,7 +39,7 @@ namespace UserService.MessageBroker
             //declare the queue after mentioning name and a few property related to that
             _channel.QueueDeclare(_queueName, exclusive: false);
         }
-        public void SendProductMessage<T>(T message, string eventType)
+        public void SendMessage<T>(T message, string eventType)
         {
            
             //Serialize the message

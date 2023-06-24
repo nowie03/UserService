@@ -2,7 +2,7 @@
 {
     public interface IMessageBrokerClient
     {
-        public void SendProductMessage<T>(T message, string eventType);
+        public void SendMessage<T>(T message, string eventType);
 
         public void ReceiveMessage();
     }

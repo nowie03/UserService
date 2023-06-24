@@ -136,7 +136,7 @@ namespace UserService.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                _rabbitMQClient.SendProductMessage<User>(user, EventTypes.USER_CREATED);
+                _rabbitMQClient.SendMessage<User>(user, EventTypes.USER_CREATED);
 
                 transaction.Commit();
 
@@ -214,11 +214,23 @@ namespace UserService.Controllers
             {
                 return NotFound();
             }
+            using var transaction = _context.Database.BeginTransaction();
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                _rabbitMQClient.SendMessage(user, EventTypes.USER_DELETED);
+
+                transaction.Commit();
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                transaction.Rollback();
+                return Problem(ex.Message);
+            }
         }
 
         private bool UserExists(int id)
