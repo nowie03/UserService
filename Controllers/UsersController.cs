@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UserService.Constants;
 using UserService.Context;
+using UserService.MessageBroker;
 using UserService.Models;
 using UserService.ResponseModels;
 
@@ -16,10 +18,12 @@ namespace UserService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ServiceContext _context;
+        private RabbitMQClient _rabbitMQClient;
 
         public UsersController(ServiceContext context)
         {
             _context = context;
+            _rabbitMQClient = new();
         }
 
         // GET: api/Users
@@ -41,6 +45,8 @@ namespace UserService.Controllers
                     List<UserAddress>? addressesOfUser =  _context.UsersAddresses.Where(ua => ua.UserId == user.Id).ToList()?? throw new Exception($"cannot find address for ${user.Id}");
 
                      responses.Add(new UserGetResponse(user.Id,user.FirstName,user.LastName,user.Username,user.Email,roleOfUser,addressesOfUser));
+
+                   
                 }
                 return Ok(responses);
 
@@ -121,18 +127,31 @@ namespace UserService.Controllers
             {
                 return Problem("Entity set 'ServiceContext.Users'  is null.");
             }
+            var transaction = _context.Database.BeginTransaction();
             try{   
+
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
+
+                _rabbitMQClient.SendProductMessage<User>(user,EventTypes.USER_CREATED);
+
+                transaction.Commit();
 
                 return CreatedAtAction("GetUser", new { id = user.Id }, user);
             }   
             catch(DbUpdateException ex)
             {
+                transaction.Rollback();
                 return BadRequest("User already exixts with that credentials");
+            }
+            catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
+            {
+                transaction.Rollback();
+                return Problem("unable to reach message queue try again");
             }
             catch(Exception ex)
             {
+                transaction.Rollback();
                 return Problem("something went wrong");
             }
         }
