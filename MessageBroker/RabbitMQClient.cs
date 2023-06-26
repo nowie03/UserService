@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using System.Text;
 using UserService.Models;
 
@@ -27,22 +28,31 @@ namespace UserService.MessageBroker
         }
         private void SetupClient()
         {
-            //Here we specify the Rabbit MQ Server. we use rabbitmq docker image and use it
-            _connectionFactory = new ConnectionFactory
+            try
             {
-                HostName = "localhost"
-            };
-            //Create the RabbitMQ connection using connection factory details as i mentioned above
-            _connection = _connectionFactory.CreateConnection();
-            //Here we create channel with session and model
-            _channel = _connection.CreateModel();
-            //declare the queue after mentioning name and a few property related to that
-            _channel.QueueDeclare(_queueName, exclusive: false);
+                //Here we specify the Rabbit MQ Server. we use rabbitmq docker image and use it
+                _connectionFactory = new ConnectionFactory
+                {
+                    HostName = "localhost"
+                };
+                //Create the RabbitMQ connection using connection factory details as i mentioned above
+                _connection = _connectionFactory.CreateConnection();
+                //Here we create channel with session and model
+                _channel = _connection.CreateModel();
+                //declare the queue after mentioning name and a few property related to that
+                _channel.QueueDeclare(_queueName, exclusive: false);
+            }catch(BrokerUnreachableException ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
         public void SendMessage<T>(T message, string eventType)
         {
-           
+
             //Serialize the message
+
+            if (_channel == null)
+                return;
 
 
             Message<T> eventMessage = new Message<T>(eventType, message);
@@ -56,19 +66,6 @@ namespace UserService.MessageBroker
             _channel.BasicPublish(exchange: "", routingKey: _queueName, body: body);
         }
 
-        public void ReceiveMessage()
-        {
-         
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += (model, eventArgs) =>
-            {
-                var body = eventArgs.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Product message received: {message}");
-            };
-            //read the message
-            _channel.BasicConsume(queue: _queueName, autoAck: true, consumer: consumer);
-
-        }
+     
     }
 }

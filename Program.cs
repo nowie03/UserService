@@ -15,7 +15,7 @@ namespace UserService
                 builder.Configuration.GetConnectionString("local-server")));
 
             //add rabbitmqclient as singleton service
-            builder.Services.AddSingleton<IMessageBrokerClient, RabbitMQClient>();
+            builder.Services.AddScoped<IMessageBrokerClient, RabbitMQClient>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
