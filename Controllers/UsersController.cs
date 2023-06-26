@@ -160,7 +160,7 @@ namespace UserService.Controllers
         }
 
         [HttpPost]
-        [Route("/address")]
+        [Route("address")]
         public async Task<ActionResult<UserAddress>> PostUserAddress(UserAddress userAddress)
         {
             User? user = await _context.Users.FindAsync(userAddress.UserId);
@@ -182,7 +182,7 @@ namespace UserService.Controllers
         }
 
         [HttpDelete]
-        [Route("/address")]
+        [Route("address")]
         public async Task<IActionResult> DeleteUserAddress(int id)
         {
             if (_context.UsersAddresses == null)
