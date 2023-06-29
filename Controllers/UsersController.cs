@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using UserService.Constants;
 using UserService.Context;
 using UserService.MessageBroker;
@@ -129,14 +130,23 @@ namespace UserService.Controllers
             {
                 return Problem("Entity set 'ServiceContext.Users'  is null.");
             }
-            var transaction = _context.Database.BeginTransaction();
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                _rabbitMQClient.SendMessage<User>(user, EventTypes.USER_CREATED);
+                //add this user added event to outbox 
+                ulong nextSequenceNumber = _rabbitMQClient.GetNextSequenceNumer();
+                string serializedUser = JsonConvert.SerializeObject(user);
+
+                Message outobxMessage = new Message(EventTypes.USER_CREATED, serializedUser, nextSequenceNumber,EventStates.EVENT_ACK_PENDING);
+
+                await _context.Outbox.AddAsync(outobxMessage);
+                await _context.SaveChangesAsync();
+
+               
 
                 transaction.Commit();
 
@@ -155,7 +165,7 @@ namespace UserService.Controllers
             catch (Exception ex)
             {
                 transaction.Rollback();
-                return Problem("something went wrong");
+                return Problem("something went wrong try again");
             }
         }
 
@@ -221,8 +231,15 @@ namespace UserService.Controllers
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
 
-                _rabbitMQClient.SendMessage(user, EventTypes.USER_DELETED);
+                ulong nextSequenceNumber = _rabbitMQClient.GetNextSequenceNumer();
+                string serializedUser = JsonConvert.SerializeObject(user);
 
+                Message outobxMessage = new Message(EventTypes.USER_DELETED, serializedUser,  nextSequenceNumber, EventStates.EVENT_ACK_PENDING);
+
+                await _context.Outbox.AddAsync(outobxMessage);
+                await _context.SaveChangesAsync();
+
+              
                 transaction.Commit();
                 return NoContent();
             }
