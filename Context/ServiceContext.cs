@@ -15,13 +15,7 @@ namespace UserService.Context
 
         public DbSet<Message> Outbox { get; set; }
 
-        override
-        protected void OnModelCreating(ModelBuilder builder)
-        {
-            //unique seq numbers to messages to prevent message duping
-            builder.Entity<Message>().HasIndex(message => message.SequenceNumber).IsUnique();
-        }
-
+        
 
     }
 }
