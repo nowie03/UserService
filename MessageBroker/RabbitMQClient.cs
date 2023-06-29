@@ -69,14 +69,16 @@ namespace UserService.MessageBroker
 
         private async void HandleMessageAcknowledge(ulong currentSequenceNumber,bool multiple)
         {
-            //if multiple is true all messages with sequenceNumber <currentSequenceNumber has been acknowledged
-            if(multiple)
+            try
             {
-                try
+                //if multiple is true all messages with sequenceNumber <currentSequenceNumber has been acknowledged
+                Console.WriteLine("publish handler");
+                using var scope = _serviceProvider.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ServiceContext>();
+                if (multiple)
                 {
-                    Console.WriteLine("publish handler");
-                    using var scope = _serviceProvider.CreateScope();
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ServiceContext>();
+
+
 
 
                     //retrieve all messages with sequenceNumber < currentSequenceNumber
@@ -84,23 +86,27 @@ namespace UserService.MessageBroker
                     await dbContext.Outbox
                         .Where(message => message.SequenceNumber <= currentSequenceNumber)
                         .ExecuteUpdateAsync(
-                        entity=>entity.SetProperty(
-                            message=>message.State,
+                        entity => entity.SetProperty(
+                            message => message.State,
                             EventStates.EVENT_ACK_COMPLETED));
+
+
+                }
+                else
+                {
+                    Message? messageToBeUpdated = await dbContext.Outbox.FirstOrDefaultAsync(message => message.SequenceNumber == currentSequenceNumber);
+                    if (messageToBeUpdated != null)
+                    {
+                        messageToBeUpdated.State = EventStates.EVENT_ACK_COMPLETED;
+                    }
 
                     await dbContext.SaveChangesAsync();
                 }
-                catch(Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
 
-
-               
-
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
-            
-
         }
 
 
