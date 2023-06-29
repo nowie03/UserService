@@ -74,10 +74,7 @@ namespace UserService.BackgroundServices
                     Console.WriteLine($"error when publishing messages to queue {ex.Message}");
                 }
 
-                finally
-                {
-                    scope.Dispose();
-                }
+              
                 await Task.Delay(5000, stoppingToken);
 
             }  
