@@ -1,25 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using System.Collections.Concurrent;
 using System.Text;
-using System.Threading;
 using UserService.Constants;
 using UserService.Context;
 using UserService.Models;
 
 namespace UserService.MessageBroker
 {
-    public class RabbitMQClient : IMessageBrokerClient , IDisposable
+    public class RabbitMQClient : IMessageBrokerClient, IDisposable
     {
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _channel;
         private string _queueName = "service-queue";
         private readonly IServiceProvider _serviceProvider;
-        
+
 
         public RabbitMQClient(IServiceProvider serviceProvider)
         {
@@ -48,7 +45,7 @@ namespace UserService.MessageBroker
                 //Here we create channel with session and model
                 _channel = _connection.CreateModel();
                 //declare the queue after mentioning name and a few property related to that
-                _channel.QueueDeclare(_queueName,exclusive: false);
+                //_channel.QueueDeclare(_queueName,exclusive: false);
 
                 _channel.ConfirmSelect();
 
@@ -56,7 +53,7 @@ namespace UserService.MessageBroker
 
 
             }
-            catch(BrokerUnreachableException ex)
+            catch (BrokerUnreachableException ex)
             {
                 Console.WriteLine(ex.ToString());
             }
@@ -67,7 +64,7 @@ namespace UserService.MessageBroker
             return _channel.NextPublishSeqNo;
         }
 
-        private async void HandleMessageAcknowledge(ulong currentSequenceNumber,bool multiple)
+        private async void HandleMessageAcknowledge(ulong currentSequenceNumber, bool multiple)
         {
             try
             {
@@ -103,7 +100,8 @@ namespace UserService.MessageBroker
                     await dbContext.SaveChangesAsync();
                 }
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -118,19 +116,19 @@ namespace UserService.MessageBroker
             if (_channel == null)
                 return;
 
-           string serializedOutBoxMessage = JsonConvert.SerializeObject(message);
+            string serializedOutBoxMessage = JsonConvert.SerializeObject(message);
 
-           var body = Encoding.UTF8.GetBytes(serializedOutBoxMessage);
+            var body = Encoding.UTF8.GetBytes(serializedOutBoxMessage);
 
-            
-                //put the data on to the product queue
-           _channel.BasicPublish(exchange: "", routingKey: _queueName, body: body);
 
-            
-           
+            //put the data on to the product queue
+            _channel.BasicPublish(exchange: "", routingKey: _queueName, body: body);
+
+
+
 
         }
 
-     
+
     }
 }

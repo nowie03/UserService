@@ -21,7 +21,7 @@ namespace UserService
             //add background service
             builder.Services.AddSingleton<PublishMessageToQueue>();
             builder.Services.AddHostedService<PublishMessageToQueue>(
-                provider=>provider.GetRequiredService<PublishMessageToQueue>());
+                provider => provider.GetRequiredService<PublishMessageToQueue>());
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,10 +31,10 @@ namespace UserService
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-         
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             app.UseAuthorization();
 

@@ -1,5 +1,4 @@
-﻿using UserService.Constants;
-using UserService.Models;
+﻿using UserService.Models;
 
 namespace UserService.MessageBroker
 {

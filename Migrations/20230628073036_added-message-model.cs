@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -28,9 +27,9 @@ namespace UserService.Migrations
                     table.PrimaryKey("PK_Outbox", x => x.Id);
                 });
 
-            
 
-          
+
+
 
             migrationBuilder.CreateIndex(
                 name: "IX_Outbox_SequenceNumber",
@@ -46,7 +45,7 @@ namespace UserService.Migrations
                 name: "Outbox");
 
 
-          
+
         }
     }
 }

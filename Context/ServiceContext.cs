@@ -15,7 +15,7 @@ namespace UserService.Context
 
         public DbSet<Message> Outbox { get; set; }
 
-        
+
 
     }
 }

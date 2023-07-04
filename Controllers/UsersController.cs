@@ -25,16 +25,17 @@ namespace UserService.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserGetResponse>>> GetUsers(int limit,int skip)
+        public async Task<ActionResult<IEnumerable<UserGetResponse>>> GetUsers(int limit, int skip)
         {
             if (_context.Users == null)
             {
                 return NotFound();
             }
-            List<User> users = await _context.Users.
-                Skip(skip*limit).
-                AsNoTracking().
-                ToListAsync();
+            List<User> users = await _context.Users
+                .Skip((skip * -1) * limit)
+                .Take(limit)
+                .AsNoTracking()
+                .ToListAsync();
 
             List<UserGetResponse> responses = new();
             try
@@ -141,12 +142,12 @@ namespace UserService.Controllers
                 ulong nextSequenceNumber = _rabbitMQClient.GetNextSequenceNumer();
                 string serializedUser = JsonConvert.SerializeObject(user);
 
-                Message outobxMessage = new Message(EventTypes.USER_CREATED, serializedUser, nextSequenceNumber,EventStates.EVENT_ACK_PENDING);
+                Message outobxMessage = new Message(EventTypes.USER_CREATED, serializedUser, nextSequenceNumber, EventStates.EVENT_ACK_PENDING);
 
                 await _context.Outbox.AddAsync(outobxMessage);
                 await _context.SaveChangesAsync();
 
-               
+
 
                 transaction.Commit();
 
@@ -234,16 +235,16 @@ namespace UserService.Controllers
                 ulong nextSequenceNumber = _rabbitMQClient.GetNextSequenceNumer();
                 string serializedUser = JsonConvert.SerializeObject(user);
 
-                Message outobxMessage = new Message(EventTypes.USER_DELETED, serializedUser,  nextSequenceNumber, EventStates.EVENT_ACK_PENDING);
+                Message outobxMessage = new Message(EventTypes.USER_DELETED, serializedUser, nextSequenceNumber, EventStates.EVENT_ACK_PENDING);
 
                 await _context.Outbox.AddAsync(outobxMessage);
                 await _context.SaveChangesAsync();
 
-              
+
                 transaction.Commit();
                 return NoContent();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 transaction.Rollback();
                 return Problem(ex.Message);

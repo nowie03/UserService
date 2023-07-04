@@ -21,7 +21,7 @@ namespace UserService.Models
 
         public DateTime CreatedAt { get; set; }
 
-        public Message(string eventType, string payload,ulong sequenceNumber,string state)
+        public Message(string eventType, string payload, ulong sequenceNumber, string state)
         {
             EventType = eventType;
             Payload = payload;
