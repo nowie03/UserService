@@ -12,8 +12,8 @@ using UserService.Context;
 namespace UserService.Migrations
 {
     [DbContext(typeof(ServiceContext))]
-    [Migration("20230629105005_changed-unique-constraint-on-outboxmessage")]
-    partial class changeduniqueconstraintonoutboxmessage
+    [Migration("20230704112549_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

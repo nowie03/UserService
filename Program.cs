@@ -34,7 +34,7 @@ namespace UserService
 
             app.UseSwagger();
             app.UseSwaggerUI();
-
+            
 
             app.UseAuthorization();
 
