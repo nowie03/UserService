@@ -32,7 +32,7 @@ namespace UserService.Controllers
                 return NotFound();
             }
             List<User> users = await _context.Users
-                .Skip((skip * -1) * limit)
+                .Skip(skip)
                 .Take(limit)
                 .AsNoTracking()
                 .ToListAsync();
