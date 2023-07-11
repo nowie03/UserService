@@ -170,6 +170,24 @@ namespace UserService.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("address")]
+        public async Task<ActionResult<IEnumerable<UserAddress>>>GetUserAddress(int userId)
+        {
+            if (_context.UsersAddresses == null)
+                return NoContent();
+            try
+            {
+                var userAdress = await _context.UsersAddresses.Where(address => address.UserId == userId).ToListAsync();
+                return Ok(userAdress);
+
+            }catch(Exception ex)
+            {
+                return BadRequest();
+            }
+            
+        }
+
         [HttpPost]
         [Route("address")]
         public async Task<ActionResult<UserAddress>> PostUserAddress(UserAddress userAddress)
